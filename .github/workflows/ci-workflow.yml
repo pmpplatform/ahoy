@@ -19,13 +19,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v1
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
       - name: Set up Node 16
         uses: actions/setup-node@v3
         with:
@@ -51,4 +44,4 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B -s .m2/settings.xml deploy -Pcoverage -Psonar -Pui-dist -Pdocker
+        run: mvn -B -s .m2/settings.xml deploy -Pui-dist -Pdocker
