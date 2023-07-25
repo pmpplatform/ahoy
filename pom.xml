@@ -40,6 +40,16 @@
 		</license>
 	</licenses>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.uniscale.inf</groupId>
+				<artifactId>ahoy</artifactId>
+				<version>1.1.0</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<modules>
 		<module>ahoy-ui</module>
 		<module>ahoy-components</module>
