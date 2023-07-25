@@ -234,7 +234,7 @@
 							</execution>
 						</executions>
 						<configuration>
-							<repository>lsdopen/ahoy</repository>
+              <repository>nexus-docker-inf.uniscale.io/ahoy/ahoy-server</repository>
 							<tag>${project.version}</tag>
 							<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
 							<buildArgs>
