@@ -31,12 +31,12 @@ jobs:
           java-version: '11'
           cache: 'maven'
 
-            #      - name: Build and test UI
-            #        working-directory: ./ahoy-ui
-            #        run: |
-            #          npm ci
-            #          npm run-script build-prod
-            #          npm run-script test-headless
+      - name: Build and test UI
+        working-directory: ./ahoy-ui
+        run: |
+          npm ci
+          npm run-script build-prod
+          npm run-script test-headless
 
       - name: Build and test Server
         env:
