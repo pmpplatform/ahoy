@@ -48,7 +48,7 @@
 		<repository>
 			<id>nexus</id>
 			<name>Nexus Maven Packages</name>
-			<url>https://nexus.uniscale.io/repository/maven-release/</url>
+			<url>https://nexus.uniscale.io/repository/maven-snapshots/</url>
 		</repository>
 	</distributionManagement>
 
