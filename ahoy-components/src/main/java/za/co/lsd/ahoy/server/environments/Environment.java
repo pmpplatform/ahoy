@@ -51,7 +51,7 @@ public class Environment {
 	@NotNull
 	@Pattern(regexp = "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$",
 		message = "Key invalid: should start with and use lower case letters and numbers")
-	@Size(min = 1, max = 9)
+	@Size(min = 1, max = 24)
 	private String key;
 
 	private Double orderIndex;

@@ -36,7 +36,7 @@
           <div class="field p-float-label">
             <input pInputText id="environmentKey" [(ngModel)]="environment.key" name="environmentKey" required
                    pattern="^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
-                   maxlength="9"
+                   maxlength="24"
                    [disabled]="editMode"
                    [appEnvironmentKeyUnique]="environmentsForValidation"
                    [ignoreOwnId]="environment.id">

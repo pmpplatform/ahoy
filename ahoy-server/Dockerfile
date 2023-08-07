@@ -21,8 +21,7 @@ RUN wget -nv https://github.com/bitnami-labs/sealed-secrets/releases/download/v0
 WORKDIR /tmp
 
 # add app jar
-ARG JAR_FILE
-ADD ${JAR_FILE} app.jar
+ADD app.jar app.jar
 
 # setup environment
 ENV JAVA_OPTS=""

@@ -1,25 +1,2 @@
 {{- define "pvc.app" -}}
-  {{- range $name, $volume := .app.volumes }}
-  {{ if eq $volume.type "PersistentVolume"}}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    manager: ahoy
-    app: {{ $.app.name }}
-    releaseName: {{ $.glob.releaseName }}
-    environment: {{ $.glob.environment }}
-  name: {{ $.app.name }}-{{ $volume.name }}
-spec:
-  {{- if $volume.storageClassName }}
-  storageClassName: {{ $volume.storageClassName }}
-  {{- end }}
-  accessModes:
-    - {{ $volume.accessMode }}
-  resources:
-    requests:
-      storage: {{ $volume.size }}
-  {{ end }}
-  {{- end }}
-  {{- end -}}
+{{- end -}}

@@ -2,20 +2,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    manager: ahoy
-    app: {{ .app.name }}
-    releaseName: {{ .glob.releaseName }}
-    environment: {{ .glob.environment }}
   name: {{ .app.name }}
+  labels:
+    app.kubernetes.io/managed-by: "ahoy"
+    app.kubernetes.io/version: {{ .glob.releaseVersion | quote }}
+    app.kubernetes.io/release-name: {{ .glob.releaseName | quote }}
+    app.kubernetes.io/name: {{ .app.name | quote }}
+    app.kubernetes.io/build: {{ .app.version | quote }}
+    app.kubernetes.io/instance: {{ .glob.releaseName | quote }}
 spec:
   replicas: {{ .app.replicas }}
   selector:
     matchLabels:
-      manager: ahoy
-      app: {{ .app.name }}
-      releaseName: {{ .glob.releaseName }}
-      environment: {{ .glob.environment }}
+      app.kubernetes.io/name: {{ .app.name | quote }}
+      app.kubernetes.io/instance: {{ .glob.releaseName | quote }}
   template:
     metadata:
       {{- if .app.configFileHashes}}
@@ -24,75 +24,40 @@ spec:
           {{ .app.configFileHashes }}
       {{- end }}
       labels:
-        manager: ahoy
-        app: {{ .app.name }}
-        releaseName: {{ .glob.releaseName }}
-        environment: {{ .glob.environment }}
+        app.kubernetes.io/managed-by: "ahoy"
+        app.kubernetes.io/version: {{ .glob.releaseVersion | quote }}
+        app.kubernetes.io/release-name: {{ .glob.releaseName | quote }}
+        app.kubernetes.io/name: {{ .app.name | quote }}
+        app.kubernetes.io/build: {{ .app.version | quote }}
+        app.kubernetes.io/instance: {{ .glob.releaseName | quote }}
+
+
     spec:
-      {{- if .app.dockerConfigJson }}
-      imagePullSecrets:
-        - name: {{ .app.name }}
-      {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - {{ .app.name | quote }}
+              topologyKey: kubernetes.io/hostname
       initContainers:
-        {{- range $containerName, $container := .app.initContainers }}
-        - image: {{ $container.image }}
-          imagePullPolicy: Always
-          name: {{ $containerName }}
-          {{- if $container.commandArgsEnabled }}
-          {{- if $container.command }}
+        - name: agent-container
+          image: 'apache/skywalking-java-agent:8.16.0-alpine'
           command:
-            - {{ $container.command }}
-          {{- end }}
-          {{- if $container.args }}
+            - /bin/sh
           args:
-            {{- range $container.args }}
-            - {{ . }}
-            {{- end}}
-          {{- end }}
-          {{- end }}
-          {{- if and $container.environmentVariablesEnabled $container.environmentVariables }}
-          env:
-            {{- range $name, $envVariable := $container.environmentVariables }}
-            {{- if eq $envVariable.type "Value"}}
-            - name: {{ $name }}
-              value: '{{ $envVariable.value }}'
-            {{- end }}
-            {{- if eq $envVariable.type "Secret"}}
-            - name: {{ $name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $.app.name }}-{{ $envVariable.secretName }}
-                  key: {{ $envVariable.secretKey }}
-            {{- end }}
-            {{- end }}
-          {{- end }}
-          {{- if and $container.servicePortsEnabled $container.servicePorts }}
-          ports:
-            {{- range $container.servicePorts }}
-            - containerPort: {{ . }}
-              protocol: TCP
-            {{- end }}
-          {{- end }}
-          {{- if and $container.resourcesEnabled $container.resources }}
-          resources:
-            {{- toYaml $container.resources | nindent 12 }}
-          {{- else }}
-          resources: {}
-          {{- end }}
-          {{- if or $.app.configFiles $.app.volumes }}
+            - '-c'
+            - >-
+              cp -R /skywalking/agent /agent/ && mkdir -p /agent/agent/logs &&
+              chmod 777 /agent/agent/logs
+          securityContext:
+            runAsUser: 0
           volumeMounts:
-            {{- if and $.app.configFilesEnabled $.app.configPath $.app.configFiles}}
-            - name: application-config
-              mountPath: {{ $.app.configPath }}
-            {{- end }}
-            {{- if $.app.volumesEnabled }}
-            {{- range $name, $volume := $.app.volumes }}
-            - name: {{ $volume.name }}
-              mountPath: {{ $volume.mountPath }}
-            {{- end }}
-            {{- end }}
-          {{- end }}
-        {{- end }}
+            - mountPath: /agent
+              name: skywalking-agent
       containers:
         {{- range $containerName, $container := .app.containers }}
         - image: {{ $container.image }}
@@ -110,8 +75,21 @@ spec:
             {{- end}}
           {{- end }}
           {{- end }}
+          envFrom:
+          - secretRef:
+              name: deployment-secrets
           {{- if and $container.environmentVariablesEnabled $container.environmentVariables }}
           env:
+            - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+            {{- if eq $.glob.environment "prod" }}
+              value: 'cph2-prod-k8s-000-skywalking-skywalking-helm-oap.skywalking:11800'
+            {{ else }}
+              value: 'cph2-dev-k8s-000-skywalking-skywalking-helm-oap.skywalking:11800'
+            {{- end }}
+            - name: PS_ENVIRONMENT
+              value: {{ $.glob.environment }}
+            - name: SW_AGENT_NAME
+              value: {{ printf "%s::%s" $.glob.environment $.app.name }}
             {{- range $name, $envVariable := $container.environmentVariables }}
             {{- if eq $envVariable.type "Value"}}
             - name: {{ $name }}

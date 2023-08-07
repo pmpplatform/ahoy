@@ -3,10 +3,11 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    manager: ahoy
-    app: {{ .app.name }}
-    releaseName: {{ .glob.releaseName }}
-    environment: {{ .glob.environment }}
+    app.kubernetes.io/managed-by: "ahoy"
+    app.kubernetes.io/version: {{ .glob.releaseVersion | quote }}
+    app.kubernetes.io/release-name: {{ .glob.releaseName | quote }}
+    app.kubernetes.io/name: {{ .app.name | quote }}
+    app.kubernetes.io/build: {{ .app.version | quote }}
   name: {{ .app.name }}
 spec:
   ports:
@@ -19,8 +20,8 @@ spec:
     {{- end }}
     {{- end }}
   selector:
-    app: {{ .app.name }}
-    releaseName: {{ .glob.releaseName }}
+    app.kubernetes.io/name: {{ .app.name | quote }}
+    app.kubernetes.io/instance: {{ .glob.releaseName | quote }}
   sessionAffinity: None
   {{- if and .app.routeEnabled .app.routeHostname .app.routeTargetPort }}
   type: NodePort
