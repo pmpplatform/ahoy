@@ -81,11 +81,7 @@ spec:
           {{- if and $container.environmentVariablesEnabled $container.environmentVariables }}
           env:
             - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
-            {{- if eq $.glob.environment "prod" }}
-              value: 'cph2-prod-k8s-000-skywalking-skywalking-helm-oap.skywalking:11800'
-            {{ else }}
-              value: 'cph2-dev-k8s-000-skywalking-skywalking-helm-oap.skywalking:11800'
-            {{- end }}
+              value: 'skywalking-skywalking-helm-oap.skywalking:11800'
             - name: PS_ENVIRONMENT
               value: {{ $.glob.environment }}
             - name: SW_AGENT_NAME
@@ -151,13 +147,13 @@ spec:
         {{- if .app.volumesEnabled }}
         {{- range $name, $volume := .app.volumes }}
         - name: {{ $volume.name }}
+          {{- if eq $name "library-sdk-ssh-keys" }}
+          secret:
+            secretName: library-sdk-ssh-keys
+          {{- end }}
           {{- if eq $volume.type "PersistentVolume"}}
           persistentVolumeClaim:
             claimName: {{ $.app.name }}-{{ $volume.name }}
-          {{- end }}
-          {{- if eq $volume.type "Secret"}}
-          secret:
-            secretName: {{ $.app.name }}-{{ $volume.secretName }}
           {{- end }}
           {{- if eq $volume.type "EmptyDir"}}
           emptyDir:
